@@ -72,6 +72,28 @@ export class Mycal {
   constructor(dateString?: string, _options?: MycalOptions) {
     this.gDate = dateString ? new Date(dateString) : new Date();
 
+    if (Number.isNaN(this.gDate.getTime())) {
+      throw new RangeError('Invalid Gregorian date');
+    }
+
+    const isoDate = dateString?.match(/^(\d{4})-(\d{2})-(\d{2})(?:$|T)/);
+    const slashDate = dateString?.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (isoDate || slashDate) {
+      const year = Number(isoDate ? isoDate[1] : slashDate![3]);
+      const month = Number(isoDate ? isoDate[2] : slashDate![1]);
+      const day = Number(isoDate ? isoDate[3] : slashDate![2]);
+      const calendarDate = new Date(0);
+      calendarDate.setUTCFullYear(year, month - 1, day);
+
+      if (
+        calendarDate.getUTCFullYear() !== year ||
+        calendarDate.getUTCMonth() + 1 !== month ||
+        calendarDate.getUTCDate() !== day
+      ) {
+        throw new RangeError('Invalid Gregorian date');
+      }
+    }
+
     // Use UTC methods to avoid timezone issues
     // Set to noon UTC, then adjust to Myanmar time (UTC +5:30)
     const utcYear = this.gDate.getUTCFullYear();
