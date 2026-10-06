@@ -66,18 +66,29 @@ export class Mycal {
   /**
    * Create a Mycal instance
    *
-   * @param dateString - Date string (e.g., '2000-01-01', '1/1/2000') or undefined for current date
+   * @param dateString - Date string, Date object, or undefined for current date
    * @param _options - Optional configuration (reserved for future use)
    */
-  constructor(dateString?: string, _options?: MycalOptions) {
-    this.gDate = dateString ? new Date(dateString) : new Date();
+  constructor(dateString?: string | Date, _options?: MycalOptions) {
+    this.gDate =
+      dateString instanceof Date
+        ? new Date(dateString.getTime())
+        : dateString
+          ? new Date(dateString)
+          : new Date();
 
     if (Number.isNaN(this.gDate.getTime())) {
       throw new RangeError('Invalid Gregorian date');
     }
 
-    const isoDate = dateString?.match(/^(\d{4})-(\d{2})-(\d{2})(?:$|T)/);
-    const slashDate = dateString?.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    const isoDate =
+      typeof dateString === 'string'
+        ? dateString.match(/^(\d{4})-(\d{2})-(\d{2})(?:$|T)/)
+        : null;
+    const slashDate =
+      typeof dateString === 'string'
+        ? dateString.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/)
+        : null;
     if (isoDate || slashDate) {
       const year = Number(isoDate ? isoDate[1] : slashDate![3]);
       const month = Number(isoDate ? isoDate[2] : slashDate![1]);
